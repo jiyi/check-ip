@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="/public/css/index.css" >
+</head>
+<body>
+  <label for="blocks">总网段：</label>
+  <textarea
+    id="blocks"
+    name="blocks"
+    rows="5"
+    cols="33"
+    placeholder="示例(数据通过换行或空格区分)：&#13;&#10;10.10.10.0/24&#13;&#10;192.168.1.1/255.255.255.0"
+  ></textarea>
+  <label for="usedBlocks">使用的网段：</label>
+  <textarea
+    id="usedBlocks"
+    name="usedBlocks"
+    rows="5"
+    cols="33"
+    placeholder="示例(数据通过换行或空格区分)：&#13;&#10;10.10.10.0/24&#13;&#10;192.168.1.1/255.255.255.0"
+  ></textarea>
+  <button id="send">发送</button>
+  <label for="unusedBlocks">未使用的网段：</label>
+  <!-- <textarea
+    id="unusedBlocks"
+    name="unusedBlocks"
+    rows="5"
+    cols="33"></textarea> -->
+  <div id="unusedBlocks"></div>
+</body>
+<script>
+
+var button = document.getElementById('send')
+var blocks = document.getElementById('blocks')
+var usedBlocks = document.getElementById('usedBlocks')
+
+function stringToArray(val) {
+  // 空格与换行切分数据
+  var arr = val.split(/\s+/)
+  if (arr[arr.length-1] === "") {
+    arr.pop()
+  }
+  if (arr[0] === "") {
+    arr.shift()
+  }
+  return arr
+}
+
+button.onclick = function () {
+  // console.log('usedBlocks', stringToArray(usedBlocks.value))
+  var data = {
+    ip: stringToArray(blocks.value),
+    usedIp: stringToArray(usedBlocks.value)
+  }
+  var httpRequest = new XMLHttpRequest()
+  httpRequest.open('POST', '/api/blocks')
+  httpRequest.setRequestHeader('Content-Type', 'application/json')
+  httpRequest.onload = function(){
+    var unusedIp = JSON.parse(this.responseText)['unusedIp']
+    // console.log(unusedIp)
+    var unusedBlocks = document.getElementById('unusedBlocks')
+    unusedBlocks.innerHTML = ''
+    unusedIp.forEach(i => {
+      unusedBlocks.innerHTML += `${i}<br>`
+    })
+  }
+  httpRequest.send(JSON.stringify(data))
+}
+
+</script>
+</html>
